@@ -15,13 +15,13 @@ Bu proje, 8, 16 ve 32 bitlik veriler üzerinde **Hamming SEC-DED (Single Error C
 
 ##  Özellikler
 
-✅ 8 / 16 / 32 bit veri seçimi  
-✅ Hamming kodu hesaplama  
-✅ Canvas üzerinde bitleri görsel olarak gösterme  
-✅ Hatalı bite tıklayarak yapay hata oluşturma  
-✅ Hatalı biti sendromla tespit edip düzeltme  
-✅ Titreşim animasyonu ile hata vurgulama  
-✅ Modern arayüz tasarımı (HTML + CSS + JS)
+8 / 16 / 32 bit veri seçimi  
+Hamming kodu hesaplama  
+Canvas üzerinde bitleri görsel olarak gösterme  
+Hatalı bite tıklayarak yapay hata oluşturma  
+Hatalı biti sendromla tespit edip düzeltme  
+Titreşim animasyonu ile hata vurgulama  
+Modern arayüz tasarımı (HTML + CSS + JS)
 
 ---
 
@@ -53,7 +53,9 @@ Bu proje, 8, 16 ve 32 bitlik veriler üzerinde **Hamming SEC-DED (Single Error C
 
 ##  Proje Sahibi
 Adı Soyadı: Büşra Ünal
+
 Ders: BLM230 – Bilgisayar Mimarisi   
+
 Okul:Bursa Teknik Üniversitesi  
 
 
