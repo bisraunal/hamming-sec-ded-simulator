@@ -1,0 +1,251 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Hamming SEC-DED Simülatörü</title>
+
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+    body {
+    
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(to right, #f0f4ff, #e0f7fa);
+      padding: 30px;
+      max-width: 900px;
+      margin: auto;
+      color: #000000;
+    }
+
+  
+    .header {
+  font-size: 28px;
+  text-align: center;
+  background: linear-gradient(to right, #00695c, #26a69a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+  margin-bottom: 30px;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+      color: #004d40;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-top: 5px;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #00695c;
+      color: white;
+      padding: 10px 20px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #004d40;
+    }
+
+    canvas {
+      border: 2px dashed #77d3ca;
+      background-color: #f1ebeb;
+      margin-top: 26px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #hakkında {
+      background-color: #dfebea;
+      padding: 14px;
+      margin-top: 21px;
+      border-radius: 11px;
+      border-left: 6px solid #33a196;
+      box-shadow: 0 2px 8px rgba(10, 10, 10, 0.1);
+      transition: all 0.4s ease;
+    }
+
+    @keyframes titresim {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-3px); }
+      50% { transform: translateX(3px); }
+      75% { transform: translateX(-2px); }
+      100% { transform: translateX(0); }
+    }
+
+    .titresim {
+      animation: titresim 0.4s;
+    }
+  </style>
+</head>
+<body>
+   <h1 class="header"> Hamming SEC-DED Kodlayıcı ve Hata Düzeltici Simülatör</h1>
+  
+
+  <label>Verinin uzunluğunu seçiniz:</label>
+  <select id="veriuzunlugu">
+    <option value="8">8 bit</option>
+    <option value="16">16 bit</option>
+    <option value="32">32 bit</option>
+  </select><br/>
+
+  <label>Veri (Sadece 0 ya da 1 değerlerini kullanın!):</label><br/>
+  <input type="text" id="veriGiris" maxlength="33"><br/>
+
+  <button onclick="hesapla()">Hamming Çizimi ve Hesaplaması</button>
+  <div id="hakkında"></div>
+
+  <canvas id="codecanvas" width="752" height="101"></canvas>
+
+  <script>
+    let currentCode = [];
+    let bitBoxSize = 40;
+    let selectedError = null;
+
+    function hesapla() {
+      const len = parseInt(document.getElementById("veriuzunlugu").value);
+      const input = document.getElementById("veriGiris").value;
+      if (!new RegExp(`^[01]{${len}}$`).test(input)) {
+        alert(`${len} bitlik veri girmelisiniz.`);
+        return;
+      }
+
+      const dataBits = input.split('').map(Number);
+      currentCode = generateHammingCode(dataBits);
+      selectedError = null;
+      drawBits();
+      document.getElementById("hakkında").innerHTML = `<p><b>Hamming Kodu:</b> ${currentCode.join('')}</p><p>Bir bite tıklayarak hata oluşturabilirsiniz.</p>`;
+    }
+
+    function generateHammingCode(dataBits) {
+      const m = dataBits.length;
+      let r = 1;
+      while (Math.pow(2, r) < m + r + 1) r++;
+      const totalLength = m + r;
+      const code = new Array(totalLength).fill(0);
+      let j= 0;
+      for (let i = 1; i <= totalLength; i++) {
+        if (!ikininkuvveti(i)) {
+          code[i - 1] = dataBits[j++];
+        }
+      }
+      for (let a = 0; a < r; a++) {
+        const pos = Math.pow(2, a);
+        let parity = 0;
+        for (let j = 1; j <= totalLength; j++) {
+          if ((j & pos) !== 0) {
+            parity ^= code[j - 1];
+          }
+        }
+        code[pos - 1] = parity;
+      }
+      return code;
+    }
+
+    function ikininkuvveti(x) {
+      return (x & (x - 1)) === 0;
+    }
+
+    function drawBits() {
+      const canvas = document.getElementById("codecanvas");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < currentCode.length; i++) {
+        const x = i * (bitBoxSize + 5);
+        
+        ctx.beginPath();
+        ctx.roundRect = function(x, y, width, height, radius) {
+          if (width < 2 * radius) radius = width / 2;
+          if (height < 2 * radius) radius = height / 2;
+          this.beginPath();
+          this.moveTo(x + radius, y);
+          this.arcTo(x + width, y, x + width, y + height, radius);
+          this.arcTo(x + width, y + height, x, y + height, radius);
+          this.arcTo(x, y + height, x, y, radius);
+          this.arcTo(x, y, x + width, y, radius);
+          this.closePath();
+        }
+
+        ctx.roundRect(x, 20, bitBoxSize, bitBoxSize, 8);
+        ctx.fillStyle = (i === selectedError) ? "#ef5350" : "#b2dfdb";
+        ctx.fill();
+        ctx.strokeStyle = "#004d40";
+        ctx.stroke();
+
+        if (i === selectedError) {
+          canvas.classList.add("titresim");
+          setTimeout(() => canvas.classList.remove("titresim"), 300);
+        }
+
+        ctx.fillStyle = "#000";
+        ctx.font = "bold 18px monospace";
+        ctx.fillText(currentCode[i], x + 15, 45);
+        ctx.font = "12px monospace";
+        ctx.fillText(i + 1, x + 12, 75);
+      }
+    }
+
+    document.getElementById("codecanvas").addEventListener("click", function(event) {
+      const rect = this.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const index = Math.floor(x / (bitBoxSize + 5));
+      if (index >= 0 && index < currentCode.length) {
+        currentCode[index] ^= 1;
+        selectedError = index;
+        drawBits();
+        control();
+      }
+    });
+
+    function control() {
+      const m = currentCode.length;
+      let r = 0;
+      while (Math.pow(2, r) < m + 1) r++;
+
+      let b = 0;
+      for (let i = 0; i < r; i++) {
+        const pos = Math.pow(2, i);
+        let parity = 0;
+        for (let j = 1; j <= m; j++) {
+          if ((j & pos) !== 0) {
+            parity ^= currentCode[j - 1];
+          }
+        }
+        if (parity !== 0) b += pos;
+      }
+
+      let hakkında = `<p><b>Hatalı Kod:</b> ${currentCode.join('')}</p>`;
+      if (b === 0) {
+        hakkında += `<p><b>Hata bulunamadı...</b></p>`;
+      } else {
+        hakkında+= `<p><b>Hatalı Bit Pozisyonu:</b> ${b}</p>`;
+        currentCode[b - 1] ^= 1;
+        hakkında+= `<p><b>Düzeltilmiş Kod:</b> ${currentCode.join('')}</p>`;
+        selectedError = null;
+        drawBits();
+      }
+
+      document.getElementById("hakkında").innerHTML = hakkında;
+    }
+  </script>
+</body>
+</html>
